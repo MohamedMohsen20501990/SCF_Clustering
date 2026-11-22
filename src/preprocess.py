@@ -10,6 +10,7 @@ from scipy.stats.mstats import trimmed_var
 from sklearn.preprocessing import StandardScaler
 from src.logging_config import logger
 from src.utils import save_obj
+import mlflow
 
 @dataclass
 class PreprocessConfig:
@@ -112,6 +113,12 @@ class Preprocessor:
             save_obj(self.high_var_columns, self.preprocess_config.selected_features_path)
             df_scaled = pd.DataFrame(df_scaled, columns=data.columns, index = data.index)
             df_scaled.to_parquet(self.preprocess_config.transformed_data_path)
+            
+            mlflow.log_param("trim_var", trim_var)
+            mlflow.log_param("n_features", n_features)
+            mlflow.log_param("selected_features", ",".join(self.high_var_columns))
+            mlflow.log_artifact(self.preprocess_config.preprocessor_path)
+            mlflow.log_artifact(self.preprocess_config.selected_features_path)
             
             logger.info(
                 f"Preprocessing completed successfully. "

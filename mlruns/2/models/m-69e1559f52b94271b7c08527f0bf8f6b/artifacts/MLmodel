@@ -1,0 +1,23 @@
+artifact_path: /Users/mac/work/python/codezilla/Projects/customer_segmentation/mlruns/2/models/m-69e1559f52b94271b7c08527f0bf8f6b/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.14.6
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.1
+    skops_trusted_types: null
+mlflow_version: 3.18.0
+model_id: m-69e1559f52b94271b7c08527f0bf8f6b
+model_size_bytes: 29211
+model_uuid: m-69e1559f52b94271b7c08527f0bf8f6b
+prompts: null
+run_id: f7524ea01788431dac2e1ce560e63156
+utc_time_created: '2026-11-22 16:25:49.636297'

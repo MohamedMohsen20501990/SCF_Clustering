@@ -1,6 +1,7 @@
 import os 
 import sys
 from pathlib import Path
+import mlflow
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from dataclasses import dataclass
@@ -81,14 +82,20 @@ class DataPipeline:
             raise   
 
 def main():
+    mlflow.set_tracking_uri("sqlite:///mlflow.db")
+    mlflow.set_experiment("scf_household_clustering")
     
-    data_pipeline = DataPipeline()
-    df = data_pipeline.read_csv_data("./data/raw/SCFP2019.csv", fearful=True)
-    data_pipeline.save_data(df)
-    preprocessor = Preprocessor()
-    df_scaled = preprocessor.start_preprocessing(data= df, trim_var=True, n_features=5)
-    model_trainer = ModelTrainer()
-    model_trainer.train_model(train_data=df_scaled, n_clusters=4)
+    with mlflow.start_run(run_name="kmeans_fearful_households"):
+            
+        data_pipeline = DataPipeline()
+        df = data_pipeline.read_csv_data("./data/raw/SCFP2019.csv", fearful=True)
+        mlflow.log_param("n_rows", len(df)
+                         )
+        data_pipeline.save_data(df)
+        preprocessor = Preprocessor()
+        df_scaled = preprocessor.start_preprocessing(data= df, trim_var=True, n_features=5)
+        model_trainer = ModelTrainer()
+        model_trainer.train_model(train_data=df_scaled, n_clusters=4)
     
     
 if __name__ == "__main__":

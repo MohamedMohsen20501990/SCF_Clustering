@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from src.utils import save_obj
 from src.logging_config import logger
 from src.schemas import ModelTrainInputs
+import mlflow
+import mlflow.sklearn
 
 
 
@@ -72,6 +74,11 @@ class ModelTrainer:
                 labels = model.labels_
                 self.report = {"n_clusters": n_clusters, "inertia score": model.inertia_, "silhouette_score": silhouette_score(X, labels)}
                 self.best_model = model
+                
+                mlflow.log_param("n_clusters", n_clusters)
+                mlflow.log_metric("inertia", model.inertia_)
+                mlflow.log_metric("silhouette_score", self.report["silhouette_score"])
+                
                 logger.info(
                     "KMeans training completed successfully. "
                     "Inertia: %.4f | Silhouette Score: %.4f",
@@ -94,6 +101,10 @@ class ModelTrainer:
                     key = f"model: {k} clusters"
                     self.report[key] = {"inertia_score" : model.inertia_, "silhouette_score": silhouette_score(X, model.labels_)}
                     self.models[key] = model
+                    
+                    mlflow.log_metric("inertia", model.inertia_, step=k)
+                    mlflow.log_metric("silhouette_score", self.report[key]["silhouette_score"], step=k)
+                    
                     logger.info(
                         "K=%d | Inertia: %.4f | Silhouette Score: %.4f",
                         k,
@@ -110,11 +121,15 @@ class ModelTrainer:
                 key=lambda item: item[1]["silhouette_score"]
                 )
                 self.best_model = self.models[best_model_clusters]
+                
+                mlflow.log_param("best_k", self.best_model.n_clusters)
+                
                 logger.info(
                     "Best model selected: %s | Silhouette Score: %.4f",
                     best_model_clusters,
                     best_model_info["silhouette_score"])    
             save_obj(self.best_model, self.model_trainer_config.trained_model_path)
+            mlflow.sklearn.log_model(self.best_model, name="model")
             
             logger.info(
                 "Best model saved successfully to %s.",
